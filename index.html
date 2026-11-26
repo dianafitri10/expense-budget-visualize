@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense &amp; Budget Visualizer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- ───── Top Bar ───── -->
+  <div class="app-shell">
+    <nav class="topbar">
+      <a href="#" class="brand" aria-label="Expense &amp; Budget Visualizer home">
+        <span class="brand-mark" aria-hidden="true">💸</span>
+        Expense&nbsp;<span class="brand-light">&amp;</span>&nbsp;Budget Visualizer
+      </a>
+      <div class="topbar-actions">
+        <span class="today-label" id="todayLabel" aria-live="polite"></span>
+        <button class="icon-button" id="themeToggle" aria-label="Toggle dark / light mode" title="Toggle theme">
+          <span id="themeIcon" aria-hidden="true">☾</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ───── Welcome Row ───── -->
+    <div class="welcome-row">
+      <div>
+        <p class="eyebrow">PERSONAL FINANCE TRACKER</p>
+        <h1>Track your <span>expenses</span>,<br>own your budget.</h1>
+        <p class="subtitle">Add transactions, visualize spending, and stay on top of your finances.</p>
+      </div>
+      <div class="welcome-icon" aria-hidden="true">📊</div>
+    </div>
+
+    <!-- ───── Summary Cards ───── -->
+    <div class="summary-grid" role="region" aria-label="Summary">
+
+      <div class="summary-card balance-card">
+        <div class="summary-top">
+          <span class="summary-icon" aria-hidden="true">💰</span>
+          <span class="summary-caption">TOTAL BALANCE</span>
+        </div>
+        <p class="summary-value" id="totalBalance" aria-live="polite">$0.00</p>
+        <p class="summary-note">All-time expenses recorded</p>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-top">
+          <span class="summary-icon" aria-hidden="true">🧾</span>
+          <span class="summary-caption">TRANSACTIONS</span>
+        </div>
+        <p class="summary-value" id="transactionCount" aria-live="polite">0</p>
+        <p class="summary-note">Total items logged</p>
+      </div>
+
+      <div class="summary-card" role="button" tabindex="0" aria-label="Open monthly summary" style="cursor:pointer">
+        <div class="summary-top">
+          <span class="summary-icon" aria-hidden="true">📅</span>
+          <span class="summary-caption">THIS MONTH</span>
+        </div>
+        <p class="summary-value" id="monthlyTotal" aria-live="polite">$0.00</p>
+        <p class="summary-note" id="monthCaption" style="cursor:pointer">Click to see monthly summary</p>
+      </div>
+
+    </div>
+
+    <!-- ───── Main Content Grid ───── -->
+    <div class="content-grid">
+
+      <!-- Add Transaction Form -->
+      <div class="panel" role="region" aria-labelledby="formHeading">
+        <div class="panel-heading">
+          <h2 id="formHeading">Add Transaction</h2>
+          <span class="heading-icon" aria-hidden="true">➕</span>
+        </div>
+
+        <form id="transactionForm" novalidate>
+          <!-- Item Name -->
+          <div class="field">
+            <label for="itemName">Item Name</label>
+            <input
+              type="text"
+              id="itemName"
+              placeholder="e.g. Lunch, Uber ride…"
+              autocomplete="off"
+              aria-describedby="nameError"
+            >
+            <span class="field-error" id="nameError" role="alert"></span>
+          </div>
+
+          <!-- Amount -->
+          <div class="field">
+            <label for="amount">Amount</label>
+            <div class="amount-input">
+              <span>$</span>
+              <input
+                type="number"
+                id="amount"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
+                aria-describedby="amountError"
+              >
+            </div>
+            <span class="field-error" id="amountError" role="alert"></span>
+          </div>
+
+          <!-- Category -->
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" aria-describedby="categoryError">
+              <option value="" disabled selected>Select a category…</option>
+              <option value="Food">🍜 Food</option>
+              <option value="Transport">🚕 Transport</option>
+              <option value="Fun">🎮 Fun</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Bills">🧾 Bills</option>
+              <option value="Health">💊 Health</option>
+              <option value="Other">✦ Other</option>
+              <option value="__custom__">＋ Add custom category…</option>
+            </select>
+            <span class="field-error" id="categoryError" role="alert"></span>
+          </div>
+
+          <!-- Custom Category (hidden until "Add custom" is selected) -->
+          <div class="field custom-category-field" id="customCategoryField" hidden>
+            <label for="customCategory">Custom Category Name</label>
+            <input
+              type="text"
+              id="customCategory"
+              placeholder="e.g. Gym, Travel…"
+              autocomplete="off"
+              aria-describedby="customCategoryError"
+            >
+            <span class="field-error" id="customCategoryError" role="alert"></span>
+          </div>
+
+          <button type="submit" class="primary-button">
+            <span aria-hidden="true">＋</span> Add Transaction
+          </button>
+          <p class="form-feedback" id="formFeedback" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <!-- Spending Chart -->
+      <div class="panel" role="region" aria-labelledby="chartHeading">
+        <div class="panel-heading chart-heading">
+          <h2 id="chartHeading">Spending by Category</h2>
+          <span class="heading-icon chart-heading-icon" aria-hidden="true">🥧</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="spendingChart" aria-label="Pie chart showing spending by category" role="img"></canvas>
+          <div class="chart-empty" id="chartEmpty" aria-live="polite">
+            <span aria-hidden="true">📂</span>
+            <p>No data yet</p>
+            <small>Add a transaction to see your spending breakdown.</small>
+          </div>
+        </div>
+        <div class="chart-legend" id="chartLegend" aria-label="Chart legend"></div>
+      </div>
+
+    </div>
+
+    <!-- ───── Transaction List ───── -->
+    <div class="panel transactions-panel" role="region" aria-labelledby="listHeading">
+      <div class="transactions-heading">
+        <h2 id="listHeading">
+          Transactions
+          <span class="count-pill" id="listCount" aria-live="polite">0</span>
+        </h2>
+        <div class="search-box" role="search">
+          <span aria-hidden="true">🔍</span>
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search by name or category…"
+            aria-label="Search transactions"
+          >
+        </div>
+      </div>
+
+      <div id="transactionList" aria-live="polite" aria-label="Transaction list"></div>
+    </div>
+
+    <!-- ───── Footer ───── -->
+    <footer>
+      <span>Expense &amp; Budget Visualizer · Built with HTML, CSS &amp; Vanilla JS</span>
+      <button class="text-button" id="clearAllButton" type="button">Clear all data</button>
+    </footer>
+
+  </div><!-- /.app-shell -->
+
+  <!-- ───── Monthly Summary Dialog ───── -->
+  <dialog class="month-dialog" id="monthDialog" aria-labelledby="monthDialogTitle">
+    <div class="dialog-heading">
+      <h2 id="monthDialogTitle">📅 Monthly Summary</h2>
+      <button class="icon-button close-dialog" id="closeMonthDialog" aria-label="Close monthly summary">×</button>
+    </div>
+    <div class="month-summary-content" id="monthSummaryContent"></div>
+  </dialog>
+
+  <!-- ───── Toast Notification ───── -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
